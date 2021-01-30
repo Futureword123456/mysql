@@ -260,5 +260,114 @@ select  e.empno,e.ename,td.dname
 from t_dept td
     right join  t_emp e on  e.deptno = td.deptno;
 
+(select  d.dname,count(te.deptno) from t_dept d left join t_emp te on d.deptno = te.deptno
+group by d.deptno)union(
+select  d.dname,count(*) from t_dept d right join t_emp te on d.deptno = te.deptno
+group by d.deptno);
+
+insert into t_emp values (7920,"程浩","MARKET",7569,"1980-03-06",2530,100,NULL);
+select * from t_emp;
+
+# 子查询
+# 查询底薪超过平均底薪的员工信息
+select empno,ename,sal
+from t_emp
+where sal>=(select avg(sal) from t_emp);
+
+#from子查询
+select e.empno,e.ename,e.sal,t.avg
+from t_emp e JOIN (SELECT deptno,avg(sal) as avg from t_emp group by  deptno) t
+on e.deptno=t.deptno and e.sal>=t.avg;
+
+SELECT
+	e.empno,
+	e.ename,
+	e.sal,
+	t.avg
+FROM
+	t_emp e
+	JOIN ( SELECT deptno, avg( sal ) AS avg FROM t_emp GROUP BY deptno ) t ON e.deptno = t.deptno
+	AND e.sal >= t.avg;
+
+SELECT ename FROM t_emp WHERE deptno in
+(select deptno from t_emp where ename in('FORD','MARTIN')) AND ename NOT IN ('FORD','MARTIN');
+
+
+SELECT
+	ename
+FROM
+	t_emp
+WHERE
+	deptno IN (
+	SELECT
+		deptno
+	FROM
+		t_emp
+	WHERE
+	ename IN ( 'FORD', 'MARTIN' ))
+	AND ename NOT IN ( 'FORD', 'MARTIN' );
+
+select ename from t_emp where sal>=
+                              any (SELECT sal from t_emp where ename in('FORD', 'MARTIN'))
+                          AND ename NOT IN ( 'FORD', 'MARTIN' );
+
+
+
+select empno, ename, job, mgr, hiredate, sal, comm, deptno from t_emp
+where exists(select  grade from t_salgrade where sal between losal and hisal and grade in(3,4));
+
+#insert()函数
+insert into t_dept(deptno, dname,loc) values (60,"后勤部","北京"),(70,"保安部","北京");
+
+insert into t_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+VALUES (8001,"流浪","长江大学",20,"1988-12-03",2000,50,(select deptno from t_dept where dname="技术部"));
+#mysql特殊方言  insert into表名 set 字段=具体值,.....
+insert  t_dept set deptno=80,dname="教学部",loc="湖北";
+delete  from t_dept where deptno=80;
+
+# ignore关键字
+#insert[ignore ] into 表名......;
+insert ignore into t_dept(deptno, dname, loc) VALUES (40,"技术部","南京"),(90,"技术部","南京");
+
+# #update语句
+# update [ignore ]表名 set 字段1=值1，....
+# [where 条件1.....order by..... limit.....]
+
+update t_emp set  empno=empno+1,mgr=mgr+1
+order by empno desc ;
+
+update t_emp set sal=sal-100 order by sal+ifnull(comm,0) desc limit 3;
+
+update t_emp e,t_salgrade s set losal=losal+200
+where e.deptno=10 and datediff(now(),hiredate)/365 >= 20;
+
+# # update表链接
+# update 表1 join 表2 on 条件 set 字段1=值1......
+#难点
+update t_emp e join t_dept td
+set e.deptno=td.deptno,e.job="ANALYST",TD.loc="北京"
+where e.ename ="ALLEN" AND td.dname="RESEARCH";
+
+update t_emp
+    join (select avg(sal) as avg from t_emp) t
+    on sal<t.avg set sal=sal+150;
+
+update t_emp,(select avg(sal) as avg from t_emp) t
+set sal = sal+150
+where sal<t.avg;
+
+update t_emp e left join t_dept td on e.deptno = td.deptno
+set  e.deptno=20
+where e.deptno is null or (td.dname="SALES" AND e.sal<2000);
+
+
+update t_emp e,t_dept td
+set  e.deptno=20
+where e.deptno is null or (td.dname="SALES" AND e.sal<2000) and e.deptno = td.deptno;
+
+#delete
+# delete [ignore ]表名 set 字段1=值1，....
+# [where 条件1.....order by..... limit.....]
+
 
 
