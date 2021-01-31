@@ -466,3 +466,31 @@ WHERE
 	e.deptno = d.deptno;
 
 #MYSQL的事务机制
+#开启事务
+#start transaction sql语句
+start transaction ;
+truncate table t_emp;
+truncate table t_dept;
+delete from t_emp;
+delete from t_dept;
+select * from t_dept;
+select * from t_emp;
+#提交事务
+commit;
+#回滚
+rollback;
+set session transaction isolation level repeatable read ;#(默认隔离级别)
+start transaction ;
+select ename,empno from
+t_emp;
+
+commit;
+#到出数据文件
+#cmd进入mysql-mysql -uroot -p
+#mysqldump -uroot -p [no-data] 数据库名->路径
+#导入sql文件
+#use demo
+#source 路径 backup.sql
+select * from t_emp;
+create database demo;
+drop database demo;
