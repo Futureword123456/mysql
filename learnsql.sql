@@ -114,11 +114,11 @@ where sal>=2000 and deptno in(10,20) and datediff(now(),hiredate)/365 >= 15;
 # select count(*) from t_emp
 # where hiredate>="1985-01-01"
 #   group by empno
-#分组
+#分组查询每个部门的平均工资，有每个等等一般都用分组group by用到分组时select语句必须有相应的字段
 select deptno,round(avg(sal)) from t_emp
 group by deptno;
 
-#查询每个部门里，每个职位的人员和平均底薪
+#查询每个（分组）部门里，每个职位的人员和平均底薪并且进行排序（用部门编号进行排序）
 select deptno,job,avg(sal),count(*) from t_emp
 group by deptno, job order by deptno;
 
@@ -138,6 +138,7 @@ select deptno,group_concat(ename),count(*),max(length(ename))
 from t_emp group by deptno;
 #where 后不能出现聚合函数  having是跟在group by后面的功能和where差不多)
 #聚合函数作为判断条件就必须用having()函数
+#查询平均工资超过2000元的工资的员工编号
 select deptno from t_emp
 group by deptno having avg(sal)>=2000;
 
@@ -260,5 +261,208 @@ select  e.empno,e.ename,td.dname
 from t_dept td
     right join  t_emp e on  e.deptno = td.deptno;
 
+(select  d.dname,count(te.deptno) from t_dept d left join t_emp te on d.deptno = te.deptno
+group by d.deptno)union(
+select  d.dname,count(*) from t_dept d right join t_emp te on d.deptno = te.deptno
+group by d.deptno);
+
+insert into t_emp values (7920,"程浩","MARKET",7569,"1980-03-06",2530,100,NULL);
+select * from t_emp;
+
+# 子查询
+# 查询底薪超过平均底薪的员工信息
+select empno,ename,sal
+from t_emp
+where sal>=(select avg(sal) from t_emp);
+
+#from子查询
+select e.empno,e.ename,e.sal,t.avg
+from t_emp e JOIN (SELECT deptno,avg(sal) as avg from t_emp group by  deptno) t
+on e.deptno=t.deptno and e.sal>=t.avg;
+
+SELECT
+	e.empno,
+	e.ename,
+	e.sal,
+	t.avg
+FROM
+	t_emp e
+	JOIN ( SELECT deptno, avg( sal ) AS avg FROM t_emp GROUP BY deptno ) t ON e.deptno = t.deptno
+	AND e.sal >= t.avg;
+
+SELECT ename FROM t_emp WHERE deptno in
+(select deptno from t_emp where ename in('FORD','MARTIN')) AND ename NOT IN ('FORD','MARTIN');
 
 
+SELECT
+	ename
+FROM
+	t_emp
+WHERE
+	deptno IN (
+	SELECT
+		deptno
+	FROM
+		t_emp
+	WHERE
+	ename IN ( 'FORD', 'MARTIN' ))
+	AND ename NOT IN ( 'FORD', 'MARTIN' );
+
+select ename from t_emp where sal>=
+                              any (SELECT sal from t_emp where ename in('FORD', 'MARTIN'))
+                          AND ename NOT IN ( 'FORD', 'MARTIN' );
+
+
+
+select empno, ename, job, mgr, hiredate, sal, comm, deptno from t_emp
+where exists(select  grade from t_salgrade where sal between losal and hisal and grade in(3,4));
+
+#insert()函数
+insert into t_dept(deptno, dname,loc) values (60,"后勤部","北京"),(70,"保安部","北京");
+
+insert into t_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+VALUES (8001,"流浪","长江大学",20,"1988-12-03",2000,50,(select deptno from t_dept where dname="技术部"));
+#mysql特殊方言  insert into表名 set 字段=具体值,.....
+insert  t_dept set deptno=80,dname="教学部",loc="湖北";
+delete  from t_dept where deptno=80;
+
+# ignore关键字
+#insert[ignore ] into 表名......;
+insert ignore into t_dept(deptno, dname, loc) VALUES (40,"技术部","南京"),(90,"技术部","南京");
+
+# #update语句
+# update [ignore ]表名 set 字段1=值1，....
+# [where 条件1.....order by..... limit.....]
+
+update t_emp set  empno=empno+1,mgr=mgr+1
+order by empno desc ;
+
+update t_emp set sal=sal-100 order by sal+ifnull(comm,0) desc limit 3;
+
+update t_emp e,t_salgrade s set losal=losal+200
+where e.deptno=10 and datediff(now(),hiredate)/365 >= 20;
+
+# # update表链接
+# update 表1 join 表2 on 条件 set 字段1=值1......
+#难点
+update t_emp e join t_dept td
+set e.deptno=td.deptno,e.job="ANALYST",TD.loc="北京"
+where e.ename ="ALLEN" AND td.dname="RESEARCH";
+update t_emp e
+    join t_dept td
+    on e.deptno = td.deptno
+set e.job="ALLENS"
+              WHERE E.ename="123" AND TD.dname="RESEACH";
+update t_emp
+    join (select avg(sal) as avg from t_emp) t
+    on sal<t.avg set sal=sal+150;
+
+update t_emp,(select avg(sal) as avg from t_emp) t
+set sal = sal+150
+where sal<t.avg;
+
+update t_emp e left join t_dept td on e.deptno = td.deptno
+set  e.deptno=20
+where e.deptno is null or (td.dname="SALES" AND e.sal<2000);
+
+
+update t_emp e,t_dept td
+set  e.deptno=20
+where e.deptno is null or (td.dname="SALES" AND e.sal<2000) and e.deptno = td.deptno;
+
+#delete
+# delete  [ignore ] FROM 表名 [where 条件1.....order by..... limit.....]
+
+delete  from t_emp where deptno=10 and datediff(now(),hiredate)/365>=20;
+
+#删除20部门中工资最高的员工记录
+delete from t_emp
+where deptno=20
+order by sal+ifnull(comm,0) desc
+limit 1;
+
+# 删除sales部门和该部门的全部员工记录
+delete e,d from t_emp e join t_dept d on e.deptno=d.deptno
+where d.dname="SALES";
+
+# 删除每个低于部门平均底薪员工记录
+delete e from t_emp e join (select deptno,avg(sal) as sal from t_emp group by deptno) t
+on e.deptno=t.deptno AND e.sal<t.sal;
+
+delete e from t_emp e join (select empno from t_emp where ename="KING") t
+on e.mgr=t.empno or e.empno=t.empno;
+# mysql函数的应用
+# 数字函数
+select  abs(-100);
+select pow(2,3);
+select pi();
+select sin(radians(30));
+select rand(30);
+#开平方
+select sqrt(9);
+
+#字符函数
+#日期函数
+SELECT CURDATE();
+SELECT CURRENT_DATE();
+SELECT CURRENT_TIME();
+SELECT CURRENT_TIMESTAMP();
+#日期的格式化j
+SELECT DATE_FORMAT('2022-01-24','%W');
+
+select count(*) from t_emp
+where date_format(hiredate,'%Y')=1981
+and date_format(hiredate,'%m')<=6;
+
+
+select date_add(now(),interval 10 day);
+
+
+select date_add(now(),interval -10 minute );
+
+
+select date_add(date_add(now(),interval 6 month),interval 3 day);
+
+#字符函数
+select lower('YANG');
+
+SELECT concat(sal,'$') from t_emp;
+
+
+SELECT REPLACE('abc','a','x');
+SELECT rpad(substr("李晓娜",1,1),length('李晓娜')/3,'*');
+
+select trim("                 Hello World  ");
+
+#条件函数
+#ifnull(表达式,值)
+# if(表达式,值1,值2)（类似三元运算符）
+select e.ename,e.empno,d.dname,
+       if(d.dname="SALES","礼品A","礼品B")
+       from t_emp e,t_dept d
+where e.deptno=d.deptno;
+
+#case
+#when表达式then值1,
+#......
+#else 值N
+#end
+SELECT
+	e.empno,
+	e.ename,
+CASE
+
+		WHEN d.dname = "SALES" THEN
+		"P1"
+		WHEN d.dname = "ACCOUNTINC" THEN
+		"P2"
+		WHEN d.dname = "RESEARCH" THEN
+		"P3"
+	END AS PLACE
+FROM
+	t_emp e,
+	t_dept d
+WHERE
+	e.deptno = d.deptno;
+
+#MYSQL的事务机制
