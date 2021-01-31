@@ -494,3 +494,57 @@ commit;
 select * from t_emp;
 create database demo;
 drop database demo;
+
+
+
+
+#新闻管理系统数据库设计源码
+CREATE TABLE t_type(
+id int UNSIGNED PRIMARY key auto_increment,
+type VARCHAR(20) not NULL UNIQUE
+)default charset=utf8;
+INSERT INTO t_type(type) VALUES("要闻"),("体育"),("科技"),("娱乐"),("历史"),("文化"),("时政");
+
+CREATE TABLE t_role(
+id int UNSIGNED PRIMARY key auto_increment,
+role VARCHAR(20) not NULL UNIQUE
+)default charset=utf8;
+INSERT INTO t_role(role) VALUES("管理员"),("新闻编辑");
+#AES_ENCRYPT(原始数据,密钥字符串)
+#加密
+SELECT HEX(AES_ENCRYPT("你好世界","ABC123456"));
+
+# aes解密
+# AES_DECRYPT("加密结果","密钥字符串")
+SELECT AES_DECRYPT(UNHEX("E85A104B6142A7375E53C0545CAD48EE"),"ABC123456");
+CREATE TABLE t_user(
+id int UNSIGNED PRIMARY key auto_increment,
+username VARCHAR(20) not null UNIQUE,
+password VARCHAR(500) not null,
+email VARCHAR(100) not null,
+role_id int UNSIGNED not null,
+index (username)
+);
+
+INSERT INTO t_user(username,password,email,role_id) VALUES("yang",HEX(AES_ENCRYPT("123456","HelloWorld")),"2635681517@qq.com",2);
+
+CREATE TABLE t_news(
+id int UNSIGNED PRIMARY key auto_increment,
+title VARCHAR(40) not NULL,
+editer_id int UNSIGNED not null,
+type_id int UNSIGNED not null,
+content_id char(12) not NULL,
+is_top TINYINT UNSIGNED not NULL,
+create_time TIMESTAMP not NULL DEFAULT CURRENT_TIMESTAMP,
+update_time TIMESTAMP not null  DEFAULT CURRENT_TIMESTAMP,
+state enum("草稿","待审批","已审批","隐藏") not null,
+INDEX(editer_id),
+INDEX(type_id),
+INDEX(state),
+INDEX(create_time),
+INDEX(is_top)
+)
+
+
+
+
