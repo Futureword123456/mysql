@@ -543,7 +543,9 @@ INDEX(type_id),
 INDEX(state),
 INDEX(create_time),
 INDEX(is_top)
-)
+);
+
+select  @@version;
 
 
 
