@@ -547,6 +547,7 @@ INDEX(is_top)
 
 select  @@version;
 
-
+select count(*) from t_user where username = 1 OR 1=1
+      AND AES_DECRYPT(UNHEX(password),'helloworld')=1 OR 1=1;
 
 
