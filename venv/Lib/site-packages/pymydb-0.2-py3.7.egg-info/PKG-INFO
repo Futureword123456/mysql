@@ -1,0 +1,12 @@
+Metadata-Version: 1.1
+Name: pymydb
+Version: 0.2
+Summary: A wrapper over PyMySQL Package to simplify MySQL database usage
+Home-page: https://github.com/adarsh2397/PyMyDb
+Author: Adarsh Honawad
+Author-email: adarsh2397@gmail.com
+License: UNKNOWN
+Download-URL: https://github.com/adarsh2397/PyMyDb/archive/0.2.tar.gz
+Description: UNKNOWN
+Keywords: mysql,sql,database,python,package
+Platform: UNKNOWN

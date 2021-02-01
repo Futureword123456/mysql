@@ -23,3 +23,6 @@ for i in data:
 cur.close()
 conn.close()
 
+
+
+
